@@ -100,7 +100,13 @@ flutter create ex00
 
 cd ex00
 
+# Visualizar app en web browser en modo local
 flutter run -d chrome
+
+# Visualizar app en smartphone (modo depuración mediante USB)
+flutter devices
+flutter run -d ID_device
+
 flutter run
 
 flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080

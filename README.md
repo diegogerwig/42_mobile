@@ -1,117 +1,68 @@
-# 42_mobile
+# 42 Mobile Piscine
 
-# 🚀 Guía de Instalación de Flutter en `sgoinfre` (Sin Sudo)
-
-Este documento detalla los pasos para instalar el SDK de Flutter en un entorno de usuario sin privilegios de administrador (`sudo`), específicamente optimizado para sortear los problemas de bloqueo de red (NFS) que ocurren al instalar herramientas en particiones compartidas como `/sgoinfre`.
-
-## 📌 El Problema de los Bloqueos (NFS Locks)
-Al intentar ejecutar Flutter por primera vez en `sgoinfre`, el sistema intenta utilizar el comando nativo `flock` de Linux para bloquear archivos de caché y evitar ejecuciones simultáneas. Los sistemas de archivos en red a menudo no responden bien a esta petición, provocando que el comando se quede colgado en un bucle infinito con el mensaje:
-> *Waiting for another flutter command to release the startup lock...*
-
-Para solucionarlo, aplicamos un parche creando un comando `flock` falso que devuelve "éxito" inmediatamente, engañando a Flutter para que continúe la ejecución.
+Bienvenido al repositorio de proyectos de la Mobile Piscine. A continuación, se detallan los comandos fundamentales para la creación y ejecución de aplicaciones en Flutter.
 
 ---
 
-## 🛠️ Pasos de Instalación
+## 🚀 Pasos Fundamentales
 
-### 1. Descarga y Extracción del SDK
-Descargamos la versión estable oficial directamente en el directorio de `sgoinfre` para no agotar el espacio del `HOME` del usuario.
-
+### 1. Crear un proyecto nuevo
+Para inicializar un proyecto de Flutter desde cero, ejecuta en tu terminal:
 ```bash
-cd /sgoinfre/students/dgerwig-/
-
-# Descargar el SDK (versión 3.29.3 estable)
-curl -O [https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.29.3-stable.tar.xz](https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.29.3-stable.tar.xz)
-
-# Extraer el contenido
-tar -xf flutter_linux_3.29.3-stable.tar.xz -C /sgoinfre/students/dgerwig-/
-
+flutter create nombre_del_proyecto
+```
+Luego, entra en el directorio generado para poder trabajar en él:
+```bash
+cd nombre_del_proyecto
 ```
 
-### 2. Creación del Parche Anti-Bloqueo de Red
+---
 
-Creamos un directorio `bin` personal y generamos un script `flock` dummy para saltarnos las restricciones del sistema de archivos.
+## 📱 Modos de Ejecución
 
+Flutter permite probar la aplicación en diferentes plataformas. Asegúrate siempre de estar dentro del directorio de tu proyecto (ej: `cd ex00`) antes de ejecutar estos comandos.
+
+### 🌐 1. Ejecución en Google Chrome
+Es la forma más rápida y sencilla de probar la aplicación en el ordenador mientras desarrollas (soporta *Hot Reload* o recarga en caliente).
 ```bash
-# Crear directorio de binarios personales
-mkdir -p /sgoinfre/students/dgerwig-/bin
-
-# Crear el script flock falso que siempre devuelve éxito (exit 0)
-echo '#!/bin/bash' > /sgoinfre/students/dgerwig-/bin/flock
-echo 'exit 0' >> /sgoinfre/students/dgerwig-/bin/flock
-
-# Darle permisos de ejecución
-chmod +x /sgoinfre/students/dgerwig-/bin/flock
-
-```
-
-### 3. Configuración de Variables de Entorno (`.zshrc`)
-
-Añadimos las rutas necesarias al archivo de configuración de Zsh. Es crucial que el directorio personal `bin` (donde está el flock falso) y el binario de Flutter tengan prioridad en el `PATH`.
-
-Añade el siguiente bloque a tu `~/.zshrc`:
-
-```bash
-# 1. Parche de red: Fuerza a usar el flock falso antes que el del sistema
-export PATH="/sgoinfre/students/dgerwig-/bin:$PATH"
-
-# 2. Añade los binarios de Flutter al PATH
-export PATH="/sgoinfre/students/dgerwig-/flutter/bin:$PATH"
-
-# 3. Variable de entorno para desactivar bloqueos internos del SDK
-export FLUTTER_ALREADY_LOCKED=true
-
-```
-
-Recarga la configuración de la terminal:
-
-```bash
-source ~/.zshrc
-
-```
-
-### 4. Limpieza de Cachés Corruptas (En caso de intentos fallidos previos)
-
-Si se abortó alguna ejecución anterior con `Ctrl + C`, es necesario limpiar los restos antes del primer arranque exitoso:
-
-```bash
-killall -9 flutter dart
-rm -f /sgoinfre/students/dgerwig-/flutter/bin/cache/lockfile
-
-```
-
-### 5. Descarga de Herramientas del Motor e Inicialización
-
-Finalmente, ejecutamos el diagnóstico en modo detallado. **Nota importante:** Este proceso tardará un par de minutos descargando el SDK de Dart. No se debe interrumpir (`Ctrl+C`).
-
-```bash
-flutter doctor -v
-
-```
-
-```bash
-which flutter
-flutter --version
-```
-
-# Ejecución de Proyectos Flutter
-
-flutter create ex00
-
-cd ex00
-
-# Visualizar app en web browser (modo localhost)
 flutter run -d chrome
+```
 
-# Visualizar app en smartphone (modo depuración mediante USB)
-flutter devices
-flutter run -d ID_device
+### 📱 2. Ejecución en un Smartphone físico
+Para instalar y correr la aplicación directamente en tu dispositivo móvil mediante cable USB:
 
+1. Asegúrate de tener habilitadas las **Opciones de desarrollador** y la **Depuración por USB** en los ajustes de tu smartphone.
+2. Conecta el dispositivo a tu ordenador por USB (y acepta el mensaje de "Permitir depuración" en la pantalla de tu móvil).
+3. Lista los dispositivos disponibles para confirmar que el ordenador lo reconoce y encontrar su `ID`:
+   ```bash
+   flutter devices
+   ```
+4. Ejecuta la app indicando el dispositivo deseado:
+   ```bash
+   flutter run -d <ID_del_dispositivo>
+   ```
+   *(Nota: Si solo tienes tu móvil conectado y no hay emuladores abiertos, a veces basta con escribir `flutter run`).*
 
-
-flutter run
-
+### 💻 3. Ejecución en Terminal (Web Server local)
+Si por algún motivo necesitas correr la aplicación en un servidor web local sin abrir automáticamente un navegador (por ejemplo, para que otro equipo en tu misma red pueda acceder):
+```bash
 flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080
+```
 
-brew install adb-enhanced
-brew install --cask android-platform-tools
+---
+
+## 🔄 Recordatorio de Sincronización (Git)
+
+Mantén siempre tu trabajo a salvo y sincronizado entre tu equipo de 42 y tu casa:
+
+* **Subir tu trabajo:**
+  ```bash
+  git add .
+  git commit -m "Mensaje descriptivo"
+  git push
+  ```
+
+* **Actualizar tu equipo al llegar:**
+  ```bash
+  git pull
+  ```

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+// Punto de entrada de la aplicación
 void main() {
   runApp(const MyApp());
 }
 
+// Widget principal que configura el diseño base de la aplicación
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -21,6 +23,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Interfaz gráfica principal. Es StatefulWidget para poder actualizar la UI dinámicamente.
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
@@ -28,9 +31,11 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+// Clase que maneja el estado y los cambios visuales de MyHomePage
 class _MyHomePageState extends State<MyHomePage> {
   bool _isToggled = false;
 
+  // Alterna el estado del texto y actualiza la pantalla
   void _onButtonPressed() {
     setState(() {
       _isToggled = !_isToggled;

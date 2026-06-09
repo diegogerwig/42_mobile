@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+// Punto de entrada de la aplicación
 void main() {
   runApp(const MyApp());
 }
 
+// Widget principal que configura el diseño base de la aplicación
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -21,9 +23,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Interfaz gráfica de la página principal (Stateless)
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
+  // Función ejecutada al presionar el botón principal
   void _onButtonPressed() {
     print('Button pressed');
   }

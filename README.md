@@ -100,7 +100,7 @@ flutter create ex00
 
 cd ex00
 
-# Visualizar app en web browser en modo local
+# Visualizar app en web browser (modo localhost)
 flutter run -d chrome
 
 # Visualizar app en smartphone (modo depuración mediante USB)

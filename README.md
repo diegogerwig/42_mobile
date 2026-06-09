@@ -48,21 +48,3 @@ Si por algún motivo necesitas correr la aplicación en un servidor web local si
 ```bash
 flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080
 ```
-
----
-
-## 🔄 Recordatorio de Sincronización (Git)
-
-Mantén siempre tu trabajo a salvo y sincronizado entre tu equipo de 42 y tu casa:
-
-* **Subir tu trabajo:**
-  ```bash
-  git add .
-  git commit -m "Mensaje descriptivo"
-  git push
-  ```
-
-* **Actualizar tu equipo al llegar:**
-  ```bash
-  git pull
-  ```

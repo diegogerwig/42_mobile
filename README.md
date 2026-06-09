@@ -107,6 +107,8 @@ flutter run -d chrome
 flutter devices
 flutter run -d ID_device
 
+
+
 flutter run
 
 flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080

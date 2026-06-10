@@ -37,6 +37,10 @@ Para instalar y correr la aplicación directamente en tu dispositivo móvil medi
    ```bash
    flutter devices
    ```
+
+adp pair
+
+
 4. Ejecuta la app indicando el dispositivo deseado:
    ```bash
    flutter run -d <ID_del_dispositivo>

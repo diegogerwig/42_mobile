@@ -38,7 +38,10 @@ Para instalar y correr la aplicación directamente en tu dispositivo móvil medi
    flutter devices
    ```
 
-adp pair
+rm ~/.android/adbkey
+rm ~/.android/adbkey.pub
+adb kill-server
+adb start-server
 
 
 4. Ejecuta la app indicando el dispositivo deseado:

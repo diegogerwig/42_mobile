@@ -1,7 +1,5 @@
 # 42 Mobile Piscine
 
-Welcome to the Mobile Piscine project repository. Below, you will find the fundamental commands for creating and running Flutter applications.
-
 ---
 
 ## 🚀 Key Steps

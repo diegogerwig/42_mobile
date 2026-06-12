@@ -1,121 +1,169 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const CalculatorApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CalculatorApp extends StatelessWidget {
+  const CalculatorApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Calculator',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blueGrey,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const CalculatorScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class CalculatorScreen extends StatefulWidget {
+  const CalculatorScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CalculatorScreen> createState() => _CalculatorScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _CalculatorScreenState extends State<CalculatorScreen> {
+  late TextEditingController _expressionController;
+  late TextEditingController _resultController;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+    // Initially display "0" in both text fields as requested
+    _expressionController = TextEditingController(text: '0');
+    _resultController = TextEditingController(text: '0');
+  }
+
+  @override
+  void dispose() {
+    _expressionController.dispose();
+    _resultController.dispose();
+    super.dispose();
+  }
+
+  // Debug feature: print the button text to console
+  void _onButtonPressed(String buttonText) {
+    print('button pressed :$buttonText');
+  }
+
+  // Helper widget to build each button inside the grid uniformly
+  Widget _buildButton(String text) {
+    // Make the "=" button span 2 columns like in the screenshot
+    int flex = (text == '=') ? 2 : 1;
+    
+    // Set specific colors for special buttons
+    Color textColor = Colors.white;
+    if (text == 'C' || text == 'AC') {
+      textColor = Colors.redAccent;
+    } else if (text == '+' || text == '-' || text == '*' || text == '/') {
+      textColor = Colors.white54;
+    }
+
+    return Expanded(
+      flex: flex,
+      child: InkWell(
+        onTap: () => _onButtonPressed(text),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 24,
+              color: textColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Calculator'),
+        centerTitle: true,
+        backgroundColor: Colors.blueGrey[800],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      backgroundColor: Colors.blueGrey[900],
+      body: Column(
+        children: [
+          // Top section: Display areas (occupies 2/5 of vertical space)
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              color: Colors.blueGrey[700],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextField(
+                    controller: _expressionController,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(fontSize: 28, color: Colors.white70),
+                    decoration: const InputDecoration(border: InputBorder.none),
+                    readOnly: true,
+                  ),
+                  TextField(
+                    controller: _resultController,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(fontSize: 40, color: Colors.white),
+                    decoration: const InputDecoration(border: InputBorder.none),
+                    readOnly: true,
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+          ),
+          // Bottom section: Keypad (occupies 3/5 of vertical space)
+          Expanded(
+            flex: 3,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildButton('7'), _buildButton('8'), _buildButton('9'), _buildButton('C'), _buildButton('AC'),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildButton('4'), _buildButton('5'), _buildButton('6'), _buildButton('+'), _buildButton('-'),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildButton('1'), _buildButton('2'), _buildButton('3'), _buildButton('*'), _buildButton('/'),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildButton('0'), _buildButton('.'), _buildButton('00'), _buildButton('='),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-// Punto de entrada de la aplicación
+// Entry point of the application
 void main() {
   runApp(const MyApp());
 }
 
-// Widget principal que configura el diseño base de la aplicación
+// Main widget that sets up the base design of the app
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -17,29 +17,29 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      debugShowCheckedModeBanner: false,
       home: const MyHomePage(),
     );
   }
 }
 
-// Interfaz gráfica principal. Es StatefulWidget para poder actualizar la UI dinámicamente.
-class MyHomePage extends StatefulWidget {
+// Main graphical interface (Stateful to allow UI updates)
+class MyHomePage extends StatefulWidget {  // Dynamic widget
   const MyHomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();  // Connects the state to the widget
 }
 
-// Clase que maneja el estado y los cambios visuales de MyHomePage
+// Class that manages the state and visual changes of MyHomePage
 class _MyHomePageState extends State<MyHomePage> {
   bool _isToggled = false;
 
-  // Alterna el estado del texto y actualiza la pantalla
+  // Toggles the text state and updates the screen
   void _onButtonPressed() {
     setState(() {
       _isToggled = !_isToggled;
     });
+    // Print to debug console
     print('Button pressed');
   }
 

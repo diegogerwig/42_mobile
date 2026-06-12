@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-// Punto de entrada de la aplicación
+// Entry point of the application
 void main() {
   runApp(const MyApp());
 }
 
-// Widget principal que configura el diseño base de la aplicación
-class MyApp extends StatelessWidget {
+// Main widget that sets up the base design of the app
+class MyApp extends StatelessWidget {   
   const MyApp({super.key});
 
   @override
@@ -17,17 +17,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // debugShowCheckedModeBanner: false,
       home: const MyHomePage(),
     );
   }
 }
 
-// Interfaz gráfica de la página principal (Stateless)
-class MyHomePage extends StatelessWidget {
+// Graphical interface of the main page (Stateless)
+class MyHomePage extends StatelessWidget {  // Static widget
   const MyHomePage({super.key});
 
-  // Función ejecutada al presionar el botón principal
+  // Function executed when the main button is pressed
   void _onButtonPressed() {
     print('Button pressed');
   }
@@ -54,6 +53,3 @@ class MyHomePage extends StatelessWidget {
     );
   }
 }
-
-
-

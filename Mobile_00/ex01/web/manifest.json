@@ -1,6 +1,6 @@
 {
-    "name": "ex00",
-    "short_name": "ex00",
+    "name": "ex01",
+    "short_name": "ex01",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

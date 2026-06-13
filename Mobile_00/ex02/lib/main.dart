@@ -18,7 +18,6 @@ class CalculatorApp extends StatelessWidget {
           seedColor: Colors.blueGrey,
           brightness: Brightness.dark,
         ),
-        useMaterial3: true,
       ),
       home: const CalculatorScreen(),
     );
@@ -41,7 +40,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   // Initialize the text controllers with default values
   @override
   void initState() {
-    super.initState();
+    super.initState();  // super.initState() is called to ensure that the parent class's initialization logic is executed before adding custom initialization logic for this state.
     // Initially display "0" in both text fields
     _expressionController = TextEditingController(text: '0');
     _resultController = TextEditingController(text: '0');
@@ -63,20 +62,21 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   // Helper widget to build each button inside the grid uniformly
   Widget _buildButton(String text) {
-    // Make the "=" button span 2 columns
-    int flex = (text == '=') ? 2 : 1;
     
     // Set specific colors for special buttons
     Color textColor = Colors.white;
     if (text == 'C' || text == 'AC') {
       textColor = Colors.redAccent;
     } else if (text == '+' || text == '-' || text == '*' || text == '/') {
-      textColor = Colors.white54;
+      textColor = Colors.white70;
     }
+
+    // Make the "=" button span 2 columns
+    int flex = (text == '=') ? 2 : 1;
 
     return Expanded(
       flex: flex,
-      child: InkWell(
+      child: InkWell(  // InkWell provides a visual feedback when the button is tapped
         onTap: () => _onButtonPressed(text),
         child: Center(
           child: Text(
@@ -108,16 +108,16 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         title: const Text('Calculator'),
         centerTitle: true,
         backgroundColor: Colors.blueGrey[800],
-        toolbarHeight: isLandscape ? 35 : 56, // Reduce AppBar height in landscape
+        toolbarHeight: isLandscape ? 35 : 56, 
       ),
       backgroundColor: Colors.blueGrey[900],
       // Wrap the entire Column in a SafeArea to respect system bars/notches
-      body: SafeArea(
+      body: SafeArea(  // SafeArea ensures that the content is not obscured by system UI elements like the notch or status bar
         child: Column(
           children: [
             // Top section: Display areas
             Expanded(
-              flex: 2,
+              flex: 2,  // The top section takes up 2/5 of the available vertical space
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: topPadding),
                 color: Colors.blueGrey[700],
@@ -153,7 +153,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             ),
             // Bottom section: Keypad
             Expanded(
-              flex: 3,
+              flex: 3,  // The bottom section takes up 3/5 of the available vertical space
               child: Column(
                 children: [
                   Expanded(

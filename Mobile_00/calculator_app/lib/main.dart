@@ -96,7 +96,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         _resultController.text = 'Error';
       } else {
         _resultController.text = eval.toString();
-        // Format nicely to remove trailing .0
+        // Format to remove trailing .0
         if (_resultController.text.endsWith('.0')) {
           _resultController.text = _resultController.text.substring(0, _resultController.text.length - 2);
         }

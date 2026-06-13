@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 // Entry point of the application
 void main() {
@@ -58,6 +59,52 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   void _onButtonPressed(String buttonText) {
     // Print to debug console
     print('button pressed :$buttonText');
+
+    setState(() {
+      if (buttonText == 'AC') {
+        _expressionController.text = '0';
+        _resultController.text = '0';
+      } else if (buttonText == 'C') {
+        if (_expressionController.text.length > 1) {
+          _expressionController.text = _expressionController.text.substring(0, _expressionController.text.length - 1);
+        } else {
+          _expressionController.text = '0';
+        }
+      } else if (buttonText == '=') {
+        _evaluateExpression();
+      } else {
+        // If current expression is '0', replace it unless operator or dot is typed
+        if (_expressionController.text == '0' && buttonText != '.' && buttonText != '+' && buttonText != '*' && buttonText != '/') {
+          _expressionController.text = buttonText;
+        } else {
+          _expressionController.text += buttonText;
+        }
+      }
+    });
+  }
+
+  // Evaluates the mathematical expression and updates the result
+  void _evaluateExpression() {
+    try {
+      Parser p = Parser();
+      Expression exp = p.parse(_expressionController.text);
+      ContextModel cm = ContextModel();
+      double eval = exp.evaluate(EvaluationType.REAL, cm);
+      
+      // Catch mathematical impossibilities (like dividing by zero)
+      if (eval.isInfinite || eval.isNaN) {
+        _resultController.text = 'Error';
+      } else {
+        _resultController.text = eval.toString();
+        // Format nicely to remove trailing .0
+        if (_resultController.text.endsWith('.0')) {
+          _resultController.text = _resultController.text.substring(0, _resultController.text.length - 2);
+        }
+      }
+    } catch (e) {
+      // Catch any parsing errors like '1++2' or unexpected formats
+      _resultController.text = 'Error';
+    }
   }
 
   // Helper widget to build each button inside the grid uniformly

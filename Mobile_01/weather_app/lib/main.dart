@@ -12,13 +12,7 @@ class WeatherApp extends StatelessWidget {
     return MaterialApp(
       title: 'Weather App',
       theme: ThemeData(
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blueGrey[700], 
-          foregroundColor: Colors.white,
-        ),
-        bottomAppBarTheme: const BottomAppBarTheme(
-          color: Colors.blueGrey[700], 
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
       ),
       home: const WeatherScreen(),
     );
@@ -31,17 +25,17 @@ class WeatherScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // DefaultTabController manages the state for the TabBar and TabBarView automatically.
-    // It enables swiping between tabs without writing manual state logic.
     return DefaultTabController(
       length: 3, // Currently, Today, Weekly
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: const Color(0xFF455A64),  // Blue Grey 700
           title: const TextField(
             style: TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: "Search location...",
               hintStyle: TextStyle(color: Colors.white70),
-              border: InputBorder.none, // Removes the underline
+              border: InputBorder.none,
               icon: Icon(Icons.search, color: Colors.white),
             ),
           ),
@@ -49,7 +43,6 @@ class WeatherScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.near_me, color: Colors.white),
               onPressed: () {
-                // Geolocation action to be implemented in the future
               },
             ),
           ],
@@ -76,12 +69,12 @@ class WeatherScreen extends StatelessWidget {
             ),
           ],
         ),
-        // The subject specifically requests using BottomAppBar
         bottomNavigationBar: const BottomAppBar(
-          padding: EdgeInsets.zero, // Removes default inner padding
+          color: Color(0xFF90A4AE),  // Blue Grey 300
+          padding: EdgeInsets.zero,
           child: TabBar(
             labelColor: Colors.white,
-            unselectedLabelColor: Colors.white60,
+            unselectedLabelColor: Colors.white70,
             indicatorColor: Colors.white,
             tabs: [
               Tab(

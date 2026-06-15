@@ -90,9 +90,18 @@ class _WeatherScreenState extends State<WeatherScreen> {
             unselectedLabelColor: Colors.white54,
             indicatorColor: Colors.white,
             tabs: [
-              Tab(icon: Icon(Icons.wb_sunny_outlined), text: 'Currently'),
-              Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
-              Tab(icon: Icon(Icons.date_range), text: 'Weekly'),
+              Tab(
+                icon: Icon(Icons.wb_sunny_outlined), 
+                text: 'Currently'
+              ),
+              Tab(
+                icon: Icon(Icons.calendar_today), 
+                text: 'Today'
+              ),
+              Tab(
+                icon: Icon(Icons.date_range), 
+                text: 'Weekly'
+              ),
             ],
           ),
         ),

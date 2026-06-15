@@ -12,7 +12,7 @@ class MediumWeatherApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Medium Weather App',
-      debugShowCheckedModeBanner: false,  // Disable the debug banner
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
       ),

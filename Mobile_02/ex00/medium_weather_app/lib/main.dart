@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'theme/app_theme.dart';
 import 'widgets/main_weather_layout.dart';
+import 'services/geolocation_service.dart';
+
 
 void main() {
   runApp(const MediumWeatherApp());

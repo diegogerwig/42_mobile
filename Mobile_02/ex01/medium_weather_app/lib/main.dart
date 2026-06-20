@@ -5,6 +5,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'theme/app_theme.dart';
 import 'widgets/main_weather_layout.dart';
+import 'services/geolocation_service.dart';
+import 'services/weather_api.dart';
+
 import 'models/location_result.dart';
 
 
@@ -102,47 +105,29 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 
   // GEOCODING API LOGIC (Ex01)
-  void _onSearchChanged(String query) {
+    void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    
     if (query.isEmpty) {
-      setState(() {
-        _searchResults.clear();
-      });
+      setState(() { _searchResults.clear(); });
       return;
     }
 
-    // Debounce to avoid spamming the API while typing
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       try {
-        final url = Uri.parse('https://geocoding-api.open-meteo.com/v1/search?name=$query&count=5&language=en&format=json');
-        final response = await http.get(url);
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final results = data['results'] as List<dynamic>?;
-          
-          if (results != null) {
-            setState(() {
-              _searchResults = results.map((e) => LocationResult.fromJson(e)).toList();
-            });
-          } else {
-            setState(() {
-              _searchResults.clear();
-            });
-          }
+        final results = await WeatherApi.fetchLocations(query, count: 5);
+        if (mounted) {
+          setState(() { _searchResults = results; });
         }
       } catch (e) {
-        // We will handle connection errors fully in ex03, but let's clear results for now
-        setState(() {
-          _searchResults.clear();
-        });
+        if (mounted) {
+          setState(() { _searchResults.clear(); });
+        }
       }
     });
   }
 
   // If user hits "Enter" without selecting from the list
-  Future<void> _onSearchSubmitted(String query) async {
+    Future<void> _onSearchSubmitted(String query) async {
     if (query.isEmpty) return;
     
     setState(() {
@@ -151,25 +136,14 @@ class _WeatherScreenState extends State<WeatherScreen> {
     });
     
     try {
-      final url = Uri.parse('https://geocoding-api.open-meteo.com/v1/search?name=$query&count=1&language=en&format=json');
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final results = data['results'] as List<dynamic>?;
-        
-        if (results != null && results.isNotEmpty) {
-          _selectLocation(LocationResult.fromJson(results[0]));
-        } else {
-          setState(() {
-            _errorText = "Could not find any result for the supplied address.";
-          });
-        }
+      final results = await WeatherApi.fetchLocations(query, count: 1);
+      if (results.isNotEmpty) {
+        _selectLocation(results.first);
+      } else {
+        setState(() { _errorText = "Could not find any result for the supplied address."; });
       }
     } catch (e) {
-      setState(() {
-        _errorText = "The service connection is lost, please check your internet connection.";
-      });
+      setState(() { _errorText = e.toString(); });
     }
   }
 

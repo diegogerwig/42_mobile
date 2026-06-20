@@ -5,6 +5,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'theme/app_theme.dart';
 import 'widgets/main_weather_layout.dart';
+import 'services/geolocation_service.dart';
+import 'services/weather_api.dart';
+
 import 'models/location_result.dart';
 import 'models/weather_data.dart';
 
@@ -52,7 +55,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 
   // 1. GPS LOGIC
-  Future<void> _fetchLocationAndWeather() async {
+    Future<void> _fetchLocationAndWeather() async {
     setState(() {
       _errorText = "";
       _searchResults.clear();
@@ -61,26 +64,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
       _selectedLocation = null;
     });
 
-    if (!await Geolocator.isLocationServiceEnabled()) {
-      setState(() { _errorText = "Geolocation is not available, please enable it in your App settings"; });
-      return;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-        setState(() { _errorText = "Geolocation is not available, please enable it in your App settings"; });
-        return;
-      }
-    }
-
     try {
-      Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low)
-      );
-      
-      // Without a proper reverse-geocoding API, we simulate a dummy location for GPS coordinates.
+      final position = await GeolocationService.getCurrentLocation();
       final loc = LocationResult(
         name: "My Location",
         region: "Current GPS",
@@ -90,30 +75,19 @@ class _WeatherScreenState extends State<WeatherScreen> {
       );
       _selectLocation(loc);
     } catch (e) {
-      setState(() { _errorText = "Geolocation is not available, please enable it in your App settings"; });
+      setState(() { _errorText = e.toString(); });
     }
   }
 
   // 2. WEATHER FETCHING LOGIC
-  Future<void> _fetchWeather(LocationResult location) async {
+    Future<void> _fetchWeather(LocationResult location) async {
     try {
-      final url = Uri.parse(
-        'https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}'
-        '&current=temperature_2m,weather_code,wind_speed_10m'
-        '&hourly=temperature_2m,weather_code,wind_speed_10m'
-        '&daily=weather_code,temperature_2m_max,temperature_2m_min'
-      );
-      final response = await http.get(url);
-      
-      if (response.statusCode == 200) {
-        setState(() {
-          _weatherData = WeatherData.fromJson(jsonDecode(response.body));
-        });
-      } else {
-        setState(() { _errorText = "The service connection is lost, please check your internet connection or try again later"; });
-      }
+      final data = await WeatherApi.fetchWeather(location.latitude, location.longitude);
+      setState(() {
+        _weatherData = data;
+      });
     } catch (e) {
-      setState(() { _errorText = "The service connection is lost, please check your internet connection or try again later"; });
+      setState(() { _errorText = e.toString(); });
     }
   }
 
@@ -127,27 +101,20 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       try {
-        final url = Uri.parse('https://geocoding-api.open-meteo.com/v1/search?name=$query&count=5&language=en&format=json');
-        final response = await http.get(url);
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final results = data['results'] as List<dynamic>?;
-          
-          if (results != null) {
-            setState(() { _searchResults = results.map((e) => LocationResult.fromJson(e)).toList(); });
-          } else {
-            setState(() { _searchResults.clear(); });
-          }
+        final results = await WeatherApi.fetchLocations(query, count: 5);
+        if (mounted) {
+          setState(() { _searchResults = results; });
         }
       } catch (e) {
-        setState(() { _searchResults.clear(); });
+        if (mounted) {
+          setState(() { _searchResults.clear(); });
+        }
       }
     });
   }
 
   // Fallback for forcing a search query without clicking the list
-  Future<void> _onSearchSubmitted(String query) async {
+    Future<void> _onSearchSubmitted(String query) async {
     if (query.isEmpty) return;
     
     setState(() {
@@ -156,21 +123,14 @@ class _WeatherScreenState extends State<WeatherScreen> {
     });
     
     try {
-      final url = Uri.parse('https://geocoding-api.open-meteo.com/v1/search?name=$query&count=1&language=en&format=json');
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final results = data['results'] as List<dynamic>?;
-        
-        if (results != null && results.isNotEmpty) {
-          _selectLocation(LocationResult.fromJson(results[0]));
-        } else {
-          setState(() { _errorText = "Could not find any result for the supplied address or coordinates."; });
-        }
+      final results = await WeatherApi.fetchLocations(query, count: 1);
+      if (results.isNotEmpty) {
+        _selectLocation(results.first);
+      } else {
+        setState(() { _errorText = "Could not find any result for the supplied address or coordinates."; });
       }
     } catch (e) {
-      setState(() { _errorText = "The service connection is lost, please check your internet connection or try again later"; });
+      setState(() { _errorText = e.toString(); });
     }
   }
 

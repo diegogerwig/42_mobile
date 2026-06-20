@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'theme/app_theme.dart';
+import 'widgets/main_weather_layout.dart';
 
 void main() {
   runApp(const MediumWeatherApp());
@@ -43,9 +45,7 @@ class MediumWeatherApp extends StatelessWidget {
     return MaterialApp(
       title: 'Medium Weather App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
-      ),
+      theme: AppTheme.theme,
       home: const WeatherScreen(),
     );
   }
@@ -219,80 +219,46 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF455A64),
-          title: TextField(
-            controller: _searchController,
-            onChanged: _onSearchChanged, // Triggered on every keystroke
-            onSubmitted: _onSearchSubmitted, // Triggered on Enter
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              hintText: "Search location...",
-              hintStyle: TextStyle(color: Colors.white70),
-              border: InputBorder.none,
-              icon: Icon(Icons.search, color: Colors.white),
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.near_me, color: Colors.white),
-              onPressed: _fetchLocation,
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            // Underlying Tabs
-            TabBarView(
-              children: [
-                _buildTabContent("Currently"),
-                _buildTabContent("Today"),
-                _buildTabContent("Weekly"),
-              ],
-            ),
-            
-            // Autocomplete Suggestions Overlay
-            if (_searchResults.isNotEmpty)
-              Material(
-                color: Colors.white,
-                elevation: 4.0,
-                child: ListView.builder(
-                  itemCount: _searchResults.length,
-                  itemBuilder: (context, index) {
-                    final result = _searchResults[index];
-                    // Formatting subtitle: "Region, Country" or just "Country" if region is empty
-                    final subtitle = result.region.isNotEmpty 
-                        ? '${result.region}, ${result.country}' 
-                        : result.country;
-                        
-                    return ListTile(
-                      leading: const Icon(Icons.location_city),
-                      title: Text(result.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(subtitle),
-                      onTap: () => _selectLocation(result),
-                    );
-                  },
-                ),
-              ),
-          ],
-        ),
-        bottomNavigationBar: const BottomAppBar(
-          color: Color(0xFF455A64),
-          padding: EdgeInsets.zero,
-          child: TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white54,
-            indicatorColor: Colors.white,
-            tabs: [
-              Tab(icon: Icon(Icons.wb_sunny_outlined), text: 'Currently'),
-              Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
-              Tab(icon: Icon(Icons.date_range), text: 'Weekly'),
+    return MainWeatherLayout(
+      searchController: _searchController,
+      onSearchChanged: _onSearchChanged,
+      onSearchSubmitted: _onSearchSubmitted,
+      onGeolocationPressed: _fetchLocation,
+      body: Stack(
+        children: [
+          // Underlying Tabs
+          TabBarView(
+            children: [
+              _buildTabContent("Currently"),
+              _buildTabContent("Today"),
+              _buildTabContent("Weekly"),
             ],
           ),
-        ),
+          
+          // Autocomplete Suggestions Overlay
+          if (_searchResults.isNotEmpty)
+            Material(
+              color: Colors.white,
+              elevation: 4.0,
+              child: ListView.builder(
+                itemCount: _searchResults.length,
+                itemBuilder: (context, index) {
+                  final result = _searchResults[index];
+                  // Formatting subtitle: "Region, Country" or just "Country" if region is empty
+                  final subtitle = result.region.isNotEmpty 
+                      ? '${result.region}, ${result.country}' 
+                      : result.country;
+                      
+                  return ListTile(
+                    leading: const Icon(Icons.location_city),
+                    title: Text(result.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(subtitle),
+                    onTap: () => _selectLocation(result),
+                  );
+                },
+              ),
+            ),
+        ],
       ),
     );
   }

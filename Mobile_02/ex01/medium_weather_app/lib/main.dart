@@ -27,7 +27,7 @@ class LocationResult {
   factory LocationResult.fromJson(Map<String, dynamic> json) {
     return LocationResult(
       name: json['name'] ?? '',
-      region: json['admin1'] ?? '', // Admin1 usually contains the region/state
+      region: json['admin1'] ?? '',
       country: json['country'] ?? '',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,

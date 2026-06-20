@@ -42,6 +42,7 @@ class MediumWeatherApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Medium Weather App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
       ),
@@ -255,8 +256,9 @@ class _WeatherScreenState extends State<WeatherScreen> {
             
             // Autocomplete Suggestions Overlay
             if (_searchResults.isNotEmpty)
-              Container(
+              Material(
                 color: Colors.white,
+                elevation: 4.0,
                 child: ListView.builder(
                   itemCount: _searchResults.length,
                   itemBuilder: (context, index) {

@@ -43,7 +43,7 @@ class LocationResult {
   LocationResult({
     required this.name,
     required this.region,
-    required this.country,R
+    required this.country,
     required this.latitude,
     required this.longitude,
   });
@@ -53,7 +53,7 @@ class LocationResult {
       name: json['name'] ?? '',
       region: json['admin1'] ?? '',
       country: json['country'] ?? '',
-      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,  // To prevent type errors, we cast to num and then to double, with a fallback of 0.0 (null safety)
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
     );
   }
@@ -106,7 +106,7 @@ class WeatherData {
     final List<dynamic> codes = hourlyJson['weather_code'] ?? [];
     
     List<HourlyWeather> hourlyList = [];
-    int hourlyCount = times.length < 24 ? times.length : 24; // Grabbing just the first 24 hrs for 'Today'
+    int hourlyCount = times.length < 24 ? times.length : 24; // Showing just the first 24 hrs for 'Today'
     for (int i = 0; i < hourlyCount; i++) {
       hourlyList.add(HourlyWeather(
         time: times[i],
@@ -124,7 +124,7 @@ class WeatherData {
     final List<dynamic> dCodes = dailyJson['weather_code'] ?? [];
 
     List<DailyWeather> dailyList = [];
-    int dailyCount = dTimes.length < 7 ? dTimes.length : 7; // Grabbing 7 days
+    int dailyCount = dTimes.length < 7 ? dTimes.length : 7; // Showing 7 days
     for (int i = 0; i < dailyCount; i++) {
       dailyList.add(DailyWeather(
         date: dTimes[i],

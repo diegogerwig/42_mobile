@@ -3,18 +3,37 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'theme/app_theme.dart';
-import 'widgets/main_weather_layout.dart';
-import 'services/geolocation_service.dart';
-import 'services/weather_api.dart';
-
-import 'models/location_result.dart';
-
 
 void main() {
   runApp(const MediumWeatherApp());
 }
 
+// Data model for Open-Meteo Geocoding API results
+class LocationResult {
+  final String name;
+  final String region;
+  final String country;
+  final double latitude;
+  final double longitude;
+
+  LocationResult({
+    required this.name,
+    required this.region,
+    required this.country,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  factory LocationResult.fromJson(Map<String, dynamic> json) {
+    return LocationResult(
+      name: json['name'] ?? '',
+      region: json['admin1'] ?? '',
+      country: json['country'] ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
 
 class MediumWeatherApp extends StatelessWidget {
   const MediumWeatherApp({super.key});
@@ -24,7 +43,9 @@ class MediumWeatherApp extends StatelessWidget {
     return MaterialApp(
       title: 'Medium Weather App',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
+      ),
       home: const WeatherScreen(),
     );
   }
@@ -105,29 +126,47 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 
   // GEOCODING API LOGIC (Ex01)
-    void _onSearchChanged(String query) {
+  void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
+    
     if (query.isEmpty) {
-      setState(() { _searchResults.clear(); });
+      setState(() {
+        _searchResults.clear();
+      });
       return;
     }
 
+    // Debounce to avoid spamming the API while typing
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       try {
-        final results = await WeatherApi.fetchLocations(query, count: 5);
-        if (mounted) {
-          setState(() { _searchResults = results; });
+        final url = Uri.parse('https://geocoding-api.open-meteo.com/v1/search?name=$query&count=5&language=en&format=json');
+        final response = await http.get(url);
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final results = data['results'] as List<dynamic>?;
+          
+          if (results != null) {
+            setState(() {
+              _searchResults = results.map((e) => LocationResult.fromJson(e)).toList();
+            });
+          } else {
+            setState(() {
+              _searchResults.clear();
+            });
+          }
         }
       } catch (e) {
-        if (mounted) {
-          setState(() { _searchResults.clear(); });
-        }
+        // We will handle connection errors fully in ex03, but let's clear results for now
+        setState(() {
+          _searchResults.clear();
+        });
       }
     });
   }
 
   // If user hits "Enter" without selecting from the list
-    Future<void> _onSearchSubmitted(String query) async {
+  Future<void> _onSearchSubmitted(String query) async {
     if (query.isEmpty) return;
     
     setState(() {
@@ -136,14 +175,25 @@ class _WeatherScreenState extends State<WeatherScreen> {
     });
     
     try {
-      final results = await WeatherApi.fetchLocations(query, count: 1);
-      if (results.isNotEmpty) {
-        _selectLocation(results.first);
-      } else {
-        setState(() { _errorText = "Could not find any result for the supplied address."; });
+      final url = Uri.parse('https://geocoding-api.open-meteo.com/v1/search?name=$query&count=1&language=en&format=json');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final results = data['results'] as List<dynamic>?;
+        
+        if (results != null && results.isNotEmpty) {
+          _selectLocation(LocationResult.fromJson(results[0]));
+        } else {
+          setState(() {
+            _errorText = "Could not find any result for the supplied address.";
+          });
+        }
       }
     } catch (e) {
-      setState(() { _errorText = e.toString(); });
+      setState(() {
+        _errorText = "The service connection is lost, please check your internet connection.";
+      });
     }
   }
 
@@ -169,46 +219,80 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainWeatherLayout(
-      searchController: _searchController,
-      onSearchChanged: _onSearchChanged,
-      onSearchSubmitted: _onSearchSubmitted,
-      onGeolocationPressed: _fetchLocation,
-      body: Stack(
-        children: [
-          // Underlying Tabs
-          TabBarView(
-            children: [
-              _buildTabContent("Currently"),
-              _buildTabContent("Today"),
-              _buildTabContent("Weekly"),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF455A64),
+          title: TextField(
+            controller: _searchController,
+            onChanged: _onSearchChanged, // Triggered on every keystroke
+            onSubmitted: _onSearchSubmitted, // Triggered on Enter
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: "Search location...",
+              hintStyle: TextStyle(color: Colors.white70),
+              border: InputBorder.none,
+              icon: Icon(Icons.search, color: Colors.white),
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.near_me, color: Colors.white),
+              onPressed: _fetchLocation,
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            // Underlying Tabs
+            TabBarView(
+              children: [
+                _buildTabContent("Currently"),
+                _buildTabContent("Today"),
+                _buildTabContent("Weekly"),
+              ],
+            ),
+            
+            // Autocomplete Suggestions Overlay
+            if (_searchResults.isNotEmpty)
+              Material(
+                color: Colors.white,
+                elevation: 4.0,
+                child: ListView.builder(
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    final result = _searchResults[index];
+                    // Formatting subtitle: "Region, Country" or just "Country" if region is empty
+                    final subtitle = result.region.isNotEmpty 
+                        ? '${result.region}, ${result.country}' 
+                        : result.country;
+                        
+                    return ListTile(
+                      leading: const Icon(Icons.location_city),
+                      title: Text(result.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(subtitle),
+                      onTap: () => _selectLocation(result),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+        bottomNavigationBar: const BottomAppBar(
+          color: Color(0xFF455A64),
+          padding: EdgeInsets.zero,
+          child: TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white54,
+            indicatorColor: Colors.white,
+            tabs: [
+              Tab(icon: Icon(Icons.wb_sunny_outlined), text: 'Currently'),
+              Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
+              Tab(icon: Icon(Icons.date_range), text: 'Weekly'),
             ],
           ),
-          
-          // Autocomplete Suggestions Overlay
-          if (_searchResults.isNotEmpty)
-            Material(
-              color: Colors.white,
-              elevation: 4.0,
-              child: ListView.builder(
-                itemCount: _searchResults.length,
-                itemBuilder: (context, index) {
-                  final result = _searchResults[index];
-                  // Formatting subtitle: "Region, Country" or just "Country" if region is empty
-                  final subtitle = result.region.isNotEmpty 
-                      ? '${result.region}, ${result.country}' 
-                      : result.country;
-                      
-                  return ListTile(
-                    leading: const Icon(Icons.location_city),
-                    title: Text(result.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(subtitle),
-                    onTap: () => _selectLocation(result),
-                  );
-                },
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }

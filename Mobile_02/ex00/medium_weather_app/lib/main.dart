@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'theme/app_theme.dart';
-import 'widgets/main_weather_layout.dart';
-import 'services/geolocation_service.dart';
-
 
 void main() {
   runApp(const MediumWeatherApp());
@@ -17,7 +13,9 @@ class MediumWeatherApp extends StatelessWidget {
     return MaterialApp(
       title: 'Medium Weather App',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
+      ),
       home: const WeatherScreen(),
     );
   }
@@ -119,16 +117,50 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainWeatherLayout(
-      searchController: _searchController,
-      onSearchSubmitted: _onSearchSubmitted,
-      onGeolocationPressed: _onGeolocationPressed,
-      body: TabBarView(
-        children: [
-          _buildTabContent("Currently"),
-          _buildTabContent("Today"),
-          _buildTabContent("Weekly"),
-        ],
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF455A64), // Constant BlueGrey 700
+          title: TextField(
+            controller: _searchController,
+            onSubmitted: _onSearchSubmitted, // Triggers on enter
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: "Search location...",
+              hintStyle: TextStyle(color: Colors.white70),
+              border: InputBorder.none,
+              icon: Icon(Icons.search, color: Colors.white),
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.near_me, color: Colors.white),
+              onPressed: _onGeolocationPressed,
+            ),
+          ],
+        ),
+        body: TabBarView(
+          children: [
+            _buildTabContent("Currently"),
+            _buildTabContent("Today"),
+            _buildTabContent("Weekly"),
+          ],
+        ),
+        bottomNavigationBar: const BottomAppBar(
+          color: Color(0xFF455A64),
+          padding: EdgeInsets.zero,
+          child: TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white54,
+            indicatorColor: Colors.white,
+            tabs: [
+              Tab(icon: Icon(Icons.wb_sunny_outlined), text: 'Currently'),
+              Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
+              Tab(icon: Icon(Icons.date_range), text: 'Weekly'),
+            ],
+          ),
+        ),
       ),
     );
   }

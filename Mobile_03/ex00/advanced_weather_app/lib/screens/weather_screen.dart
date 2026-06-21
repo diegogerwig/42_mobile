@@ -41,7 +41,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
     }
     try {
       Position position = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.low));
-      final loc = LocationResult(name: "My Location", region: "Current GPS", country: "", latitude: position.latitude, longitude: position.longitude);
+      final loc = LocationResult(name: "My Location (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)})", region: "Current GPS", country: "", latitude: position.latitude, longitude: position.longitude);
       _selectLocation(loc);
     } catch (e) {
       setState(() { _errorText = "Geolocation is not available, please enable it in your App settings"; });
@@ -96,7 +96,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   void _selectLocation(LocationResult result) {
     setState(() {
-      _searchController.text = result.name == "My Location" ? "" : result.name;
+      _searchController.text = result.name.startsWith("My Location") ? "" : result.name;
       _searchResults.clear();
       _selectedLocation = result;
       _weatherData = null;

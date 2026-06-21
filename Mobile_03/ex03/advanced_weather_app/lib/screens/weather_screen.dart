@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:fl_chart/fl_chart.dart';
 import '../models/models.dart';
 
 class WeatherScreen extends StatefulWidget {
@@ -261,31 +262,121 @@ class _WeatherScreenState extends State<WeatherScreen> {
     );
   }
 
+  Widget _buildTemperatureChart() {
+    if (_weatherData == null || _weatherData!.hourly.isEmpty) return const SizedBox.shrink();
+
+    List<FlSpot> spots = [];
+    for (int i = 0; i < _weatherData!.hourly.length; i++) {
+      spots.add(FlSpot(i.toDouble(), _weatherData!.hourly[i].temperature));
+    }
+
+    return Container(
+      height: 200,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      child: LineChart(
+        LineChartData(
+          gridData: const FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            drawHorizontalLine: true,
+          ),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              axisNameWidget: const Padding(padding: EdgeInsets.only(bottom: 4), child: Text('°C', style: TextStyle(color: Colors.white70, fontSize: 10))),
+              axisNameSize: 16,
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 28,
+                getTitlesWidget: (value, meta) {
+                  return Text(value.toInt().toString(), style: const TextStyle(color: Colors.white70, fontSize: 10), textAlign: TextAlign.right);
+                },
+              ),
+            ),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  int index = value.toInt();
+                  if (index % 4 == 0 && index >= 0 && index < _weatherData!.hourly.length) {
+                    final h = _weatherData!.hourly[index];
+                    final timeStr = h.time.length >= 16 ? h.time.substring(11, 16) : '';
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(timeStr, style: const TextStyle(color: Colors.cyan, fontSize: 10)),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+                reservedSize: 22,
+              ),
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              color: Colors.orange,
+              barWidth: 3,
+              isStrokeCapRound: true,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                color: Colors.orange.withOpacity(0.3),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTodayTab() {
     if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)));
     if (_weatherData == null) return const Center(child: CircularProgressIndicator());
-    return ListView.builder(
-      itemCount: _weatherData!.hourly.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return Column(
-            children: [const SizedBox(height: 20), _buildLocationHeader()],
-          );
-        }
-        final h = _weatherData!.hourly[index - 1];
-        final timeString = h.time.length >= 16 ? h.time.substring(11, 16) : h.time;
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-          child: Row(
-            children: [
-              Expanded(flex: 1, child: Text(timeString, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
-              Expanded(flex: 1, child: Text("${h.temperature}°C", textAlign: TextAlign.center, style: const TextStyle(fontSize: 14))),
-              Expanded(flex: 2, child: Text(decodeWMO(h.weatherCode), textAlign: TextAlign.center, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis)),
-              Expanded(flex: 1, child: Text("${h.windSpeed} km/h", textAlign: TextAlign.right, style: const TextStyle(fontSize: 14))),
-            ],
+    return Column(
+      children: [
+        const SizedBox(height: 20), 
+        _buildLocationHeader(),
+        _buildTemperatureChart(),
+        const SizedBox(height: 10),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _weatherData!.hourly.length,
+            itemBuilder: (context, index) {
+              final h = _weatherData!.hourly[index];
+              final timeString = h.time.length >= 16 ? h.time.substring(11, 16) : h.time;
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                child: Row(
+                  children: [
+                    Expanded(flex: 2, child: Text(timeString, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.cyan))),
+                    Expanded(flex: 2, child: Text("${h.temperature}°C", textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Colors.orange))),
+                    Expanded(flex: 3, child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(_getWeatherIcon(h.weatherCode), size: 14, color: _getWeatherIconColor(h.weatherCode)),
+                        const SizedBox(width: 2),
+                        Flexible(child: Text(decodeWMO(h.weatherCode), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
+                      ]
+                    )),
+                    Expanded(flex: 3, child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Icon(Icons.air, color: Colors.white70, size: 14),
+                        const SizedBox(width: 2),
+                        Flexible(child: Text("${h.windSpeed} km/h", textAlign: TextAlign.right, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
+                      ],
+                    )),
+                  ],
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 

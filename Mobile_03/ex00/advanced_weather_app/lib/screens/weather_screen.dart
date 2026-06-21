@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'models.dart';
+import '../models/models.dart';
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});

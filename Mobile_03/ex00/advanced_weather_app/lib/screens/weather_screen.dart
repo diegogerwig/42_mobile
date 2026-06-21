@@ -118,76 +118,55 @@ class _WeatherScreenState extends State<WeatherScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: const Color(0xFF1E1E2C),
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildSearchBar(),
-              Expanded(
-                child: Stack(
-                  children: [
-                    TabBarView(children: [_buildCurrentTab(), _buildTodayTab(), _buildWeeklyTab()]),
-                    if (_searchResults.isNotEmpty) _buildSuggestionsOverlay(),
-                  ],
-                ),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF455A64),
+          title: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              onSubmitted: _onSearchSubmitted,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                hintText: "Search location...",
+                hintStyle: TextStyle(color: Colors.white70),
+                border: InputBorder.none,
+                icon: Icon(Icons.search, color: Colors.white),
               ),
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.near_me, color: Colors.white),
+              onPressed: _fetchLocationAndWeather,
+              tooltip: "Use current location",
+            )
+          ],
+        ),
+        body: Stack(
+          children: [
+            TabBarView(children: [_buildCurrentTab(), _buildTodayTab(), _buildWeeklyTab()]),
+            if (_searchResults.isNotEmpty) _buildSuggestionsOverlay(),
+          ],
+        ),
+        bottomNavigationBar: const BottomAppBar(
+          color: Color(0xFF455A64),
+          padding: EdgeInsets.zero,
+          child: TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white54,
+            indicatorColor: Colors.white,
+            tabs: [
+              Tab(icon: Icon(Icons.wb_sunny_outlined), text: 'Currently'),
+              Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
+              Tab(icon: Icon(Icons.date_range), text: 'Weekly')
             ],
           ),
         ),
-        bottomNavigationBar: const BottomAppBar(
-          color: Color(0xFF2D2D44),
-          padding: EdgeInsets.zero,
-          child: TabBar(
-            labelColor: Colors.white, unselectedLabelColor: Colors.white54, indicatorColor: Colors.cyanAccent,
-            tabs: [Tab(icon: Icon(Icons.wb_sunny_outlined), text: 'Currently'), Tab(icon: Icon(Icons.calendar_today), text: 'Today'), Tab(icon: Icon(Icons.date_range), text: 'Weekly')],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2D2D44),
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 3)),
-                ],
-              ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                onSubmitted: _onSearchSubmitted,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.search, color: Colors.cyanAccent),
-                  hintText: 'Search location...',
-                  hintStyle: TextStyle(color: Colors.white54),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            decoration: const BoxDecoration(
-              color: Colors.cyanAccent,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.near_me, color: Color(0xFF1E1E2C)),
-              onPressed: _fetchLocationAndWeather,
-              tooltip: "Use current location",
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -196,29 +175,26 @@ class _WeatherScreenState extends State<WeatherScreen> {
     return Positioned(
       top: 0, left: 16, right: 64,
       child: Material(
-        color: Colors.transparent,
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF3B3B54),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
-          ),
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            shrinkWrap: true,
-            itemCount: _searchResults.length,
-            separatorBuilder: (_, __) => const Divider(color: Colors.white12, height: 1),
-            itemBuilder: (context, index) {
-              final result = _searchResults[index];
-              final subtitle = result.region.isNotEmpty ? '${result.region}, ${result.country}' : result.country;
-              return ListTile(
-                leading: const Icon(Icons.location_on, color: Colors.cyanAccent),
-                title: Text(result.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                subtitle: Text(subtitle, style: const TextStyle(color: Colors.white70)),
-                onTap: () => _selectLocation(result),
-              );
-            },
-          ),
+        color: Colors.white,
+        elevation: 4.0,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(8),
+          bottomRight: Radius.circular(8),
+        ),
+        child: ListView.builder(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          itemCount: _searchResults.length,
+          itemBuilder: (context, index) {
+            final result = _searchResults[index];
+            final subtitle = result.region.isNotEmpty ? '${result.region}, ${result.country}' : result.country;
+            return ListTile(
+              leading: const Icon(Icons.location_city),
+              title: Text(result.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(subtitle),
+              onTap: () => _selectLocation(result),
+            );
+          },
         ),
       ),
     );
@@ -230,34 +206,34 @@ class _WeatherScreenState extends State<WeatherScreen> {
     if (sub.startsWith(", ")) sub = sub.substring(2);
     return Column(
       children: [
-        Text(_selectedLocation!.name, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.cyanAccent), textAlign: TextAlign.center),
-        if (sub.isNotEmpty) Text(sub, style: const TextStyle(fontSize: 16, color: Colors.white70), textAlign: TextAlign.center),
+        Text(_selectedLocation!.name, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        if (sub.isNotEmpty) Text(sub, style: const TextStyle(fontSize: 16, color: Colors.grey), textAlign: TextAlign.center),
         const SizedBox(height: 20),
       ],
     );
   }
 
   Widget _buildCurrentTab() {
-    if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.redAccent, fontSize: 16), textAlign: TextAlign.center)));
-    if (_weatherData == null) return const Center(child: CircularProgressIndicator(color: Colors.cyanAccent));
+    if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)));
+    if (_weatherData == null) return const Center(child: CircularProgressIndicator());
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildLocationHeader(),
-          Text("${_weatherData!.current.temperature}°C", style: const TextStyle(fontSize: 56, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text("${_weatherData!.current.temperature}°C", style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
-          Text(decodeWMO(_weatherData!.current.weatherCode), style: const TextStyle(fontSize: 24, color: Colors.white)),
+          Text(decodeWMO(_weatherData!.current.weatherCode), style: const TextStyle(fontSize: 24)),
           const SizedBox(height: 10),
-          Text("${_weatherData!.current.windSpeed} km/h", style: const TextStyle(fontSize: 20, color: Colors.white70)),
+          Text("${_weatherData!.current.windSpeed} km/h", style: const TextStyle(fontSize: 20)),
         ],
       ),
     );
   }
 
   Widget _buildTodayTab() {
-    if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.redAccent, fontSize: 16), textAlign: TextAlign.center)));
-    if (_weatherData == null) return const Center(child: CircularProgressIndicator(color: Colors.cyanAccent));
+    if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)));
+    if (_weatherData == null) return const Center(child: CircularProgressIndicator());
     return Column(
       children: [
         const SizedBox(height: 20), _buildLocationHeader(),
@@ -271,10 +247,10 @@ class _WeatherScreenState extends State<WeatherScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
                 child: Row(
                   children: [
-                    Expanded(flex: 1, child: Text(timeString, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white))),
-                    Expanded(flex: 1, child: Text("${h.temperature}°C", textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Colors.cyanAccent))),
-                    Expanded(flex: 2, child: Text(decodeWMO(h.weatherCode), textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Colors.white), overflow: TextOverflow.ellipsis)),
-                    Expanded(flex: 1, child: Text("${h.windSpeed} km/h", textAlign: TextAlign.right, style: const TextStyle(fontSize: 14, color: Colors.white70))),
+                    Expanded(flex: 1, child: Text(timeString, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
+                    Expanded(flex: 1, child: Text("${h.temperature}°C", textAlign: TextAlign.center, style: const TextStyle(fontSize: 14))),
+                    Expanded(flex: 2, child: Text(decodeWMO(h.weatherCode), textAlign: TextAlign.center, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis)),
+                    Expanded(flex: 1, child: Text("${h.windSpeed} km/h", textAlign: TextAlign.right, style: const TextStyle(fontSize: 14))),
                   ],
                 ),
               );
@@ -286,8 +262,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 
   Widget _buildWeeklyTab() {
-    if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.redAccent, fontSize: 16), textAlign: TextAlign.center)));
-    if (_weatherData == null) return const Center(child: CircularProgressIndicator(color: Colors.cyanAccent));
+    if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)));
+    if (_weatherData == null) return const Center(child: CircularProgressIndicator());
     return Column(
       children: [
         const SizedBox(height: 20), _buildLocationHeader(),
@@ -297,9 +273,9 @@ class _WeatherScreenState extends State<WeatherScreen> {
             itemBuilder: (context, index) {
               final d = _weatherData!.daily[index];
               return ListTile(
-                leading: SizedBox(width: 80, child: Text(d.date, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white))),
-                title: Text("${d.minTemp}°C / ${d.maxTemp}°C", textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Colors.cyanAccent)),
-                trailing: SizedBox(width: 100, child: Text(decodeWMO(d.weatherCode), style: const TextStyle(fontSize: 14, color: Colors.white), textAlign: TextAlign.right)),
+                leading: SizedBox(width: 80, child: Text(d.date, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
+                title: Text("${d.minTemp}°C / ${d.maxTemp}°C", textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
+                trailing: SizedBox(width: 100, child: Text(decodeWMO(d.weatherCode), style: const TextStyle(fontSize: 14), textAlign: TextAlign.right)),
               );
             },
           ),

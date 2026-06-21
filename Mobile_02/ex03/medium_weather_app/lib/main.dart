@@ -43,7 +43,7 @@ class LocationResult {
   LocationResult({
     required this.name,
     required this.region,
-    required this.country,
+    required this.country,R
     required this.latitude,
     required this.longitude,
   });

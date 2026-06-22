@@ -336,14 +336,16 @@ class _WeatherScreenState extends State<WeatherScreen> {
   Widget _buildTodayTab() {
     if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)));
     if (_weatherData == null) return const Center(child: CircularProgressIndicator());
-    return Column(
-      children: [
-        const SizedBox(height: 20), 
-        _buildLocationHeader(),
-        _buildTemperatureChart(),
-        const SizedBox(height: 10),
-        Expanded(
-          child: ListView.builder(
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 20), 
+          _buildLocationHeader(),
+          _buildTemperatureChart(),
+          const SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             itemCount: _weatherData!.hourly.length,
             itemBuilder: (context, index) {
               final h = _weatherData!.hourly[index];
@@ -375,8 +377,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
               );
             },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -466,14 +468,16 @@ class _WeatherScreenState extends State<WeatherScreen> {
   Widget _buildWeeklyTab() {
     if (_errorText.isNotEmpty) return Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_errorText, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)));
     if (_weatherData == null) return const Center(child: CircularProgressIndicator());
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        _buildLocationHeader(),
-        _buildWeeklyChart(),
-        const SizedBox(height: 10),
-        Expanded(
-          child: ListView.builder(
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          _buildLocationHeader(),
+          _buildWeeklyChart(),
+          const SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             itemCount: _weatherData!.daily.length > 7 ? 7 : _weatherData!.daily.length,
             itemBuilder: (context, index) {
               final d = _weatherData!.daily[index];
@@ -511,8 +515,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
               );
             },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

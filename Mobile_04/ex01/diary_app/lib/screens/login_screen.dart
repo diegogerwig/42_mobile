@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'profile_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
-  // Flujo visual de autenticación (Modal inferior)
   void _startAuthFlow(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -25,19 +25,17 @@ class LoginScreen extends StatelessWidget {
                 icon: Icons.g_mobiledata,
                 text: "Continue with Google",
                 onPressed: () {
-                  // TODO: Implementar Firebase Google Auth
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Firebase no configurado aún")));
+                  Navigator.pop(context); // Cierra el modal
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen(userEmail: "test@gmail.com")));
                 },
               ),
               const SizedBox(height: 12),
               _buildAuthButton(
-                icon: Icons.code, // Placeholder icon for Github
+                icon: Icons.code,
                 text: "Continue with GitHub",
                 onPressed: () {
-                  // TODO: Implementar Firebase GitHub Auth
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Firebase no configurado aún")));
+                  Navigator.pop(context); // Cierra el modal
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen(userEmail: "github_user@mail.com")));
                 },
               ),
               const SizedBox(height: 30),
@@ -71,7 +69,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0FDF4), // Un fondo verde muy claro
+      backgroundColor: const Color(0xFFF0FDF4),
       body: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -86,14 +84,14 @@ class LoginScreen extends StatelessWidget {
                 fontSize: 42,
                 fontWeight: FontWeight.w600,
                 fontStyle: FontStyle.italic,
-                color: Color(0xFF14532D), // Verde muy oscuro
+                color: Color(0xFF14532D),
               ),
             ),
             const Spacer(flex: 2),
             ElevatedButton(
               onPressed: () => _startAuthFlow(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF22C55E), // Verde brillante (como en el PDF)
+                backgroundColor: const Color(0xFF22C55E),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),

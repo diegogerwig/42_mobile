@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
-  // Flujo visual de autenticación (Modal inferior)
   void _startAuthFlow(BuildContext context) {
     showModalBottomSheet(
       context: context,

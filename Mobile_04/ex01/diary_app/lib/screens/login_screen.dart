@@ -1,8 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'profile_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null && mounted) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: user.email ?? 'Unknown')));
+      }
+    });
+  }
+
+  Future<void> _signInWithGoogle(BuildContext context) async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      if (context.mounted) Navigator.pop(context); 
+    } catch (e) {
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Google Sign-In Error: $e")));
+    }
+  }
+
+  Future<void> _signInWithGitHub(BuildContext context) async {
+    try {
+      GithubAuthProvider githubProvider = GithubAuthProvider();
+      await FirebaseAuth.instance.signInWithProvider(githubProvider);
+      if (context.mounted) Navigator.pop(context); 
+    } catch (e) {
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("GitHub Sign-In Error: $e")));
+    }
+  }
 
   void _startAuthFlow(BuildContext context) {
     showModalBottomSheet(
@@ -24,19 +68,13 @@ class LoginScreen extends StatelessWidget {
               _buildAuthButton(
                 icon: Icons.g_mobiledata,
                 text: "Continue with Google",
-                onPressed: () {
-                  Navigator.pop(context); // Cierra el modal
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen(userEmail: "test@gmail.com")));
-                },
+                onPressed: () => _signInWithGoogle(context),
               ),
               const SizedBox(height: 12),
               _buildAuthButton(
                 icon: Icons.code,
                 text: "Continue with GitHub",
-                onPressed: () {
-                  Navigator.pop(context); // Cierra el modal
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen(userEmail: "github_user@mail.com")));
-                },
+                onPressed: () => _signInWithGitHub(context),
               ),
               const SizedBox(height: 30),
             ],

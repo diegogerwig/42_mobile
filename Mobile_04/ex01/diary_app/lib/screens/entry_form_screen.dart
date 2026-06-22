@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/diary_entry.dart';
-import 'dart:math';
 
 class EntryFormScreen extends StatefulWidget {
   final String userEmail;
@@ -14,15 +14,18 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   Feeling _selectedFeeling = Feeling.happy;
+  bool _isSaving = false;
 
-  void _saveEntry() {
+  Future<void> _saveEntry() async {
     if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Title and Content cannot be empty")));
       return;
     }
     
+    setState(() { _isSaving = true; });
+
     final newEntry = DiaryEntry(
-      id: Random().nextInt(1000000).toString(),
+      id: '', 
       userEmail: widget.userEmail,
       date: DateTime.now(),
       title: _titleController.text,
@@ -30,8 +33,13 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       content: _contentController.text,
     );
 
-    MockDatabase.entries.add(newEntry);
-    Navigator.pop(context);
+    try {
+      await FirebaseFirestore.instance.collection('entries').add(newEntry.toFirestore());
+      if (context.mounted) Navigator.pop(context);
+    } catch (e) {
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error saving: $e")));
+      setState(() { _isSaving = false; });
+    }
   }
 
   @override
@@ -43,10 +51,12 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
         backgroundColor: const Color(0xFF22C55E),
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveEntry,
-          )
+          _isSaving 
+            ? const Padding(padding: EdgeInsets.all(16.0), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+            : IconButton(
+                icon: const Icon(Icons.save),
+                onPressed: _saveEntry,
+              )
         ],
       ),
       body: Padding(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum Feeling { happy, neutral, sad, angry, surprised }
 
@@ -38,18 +39,26 @@ class DiaryEntry {
       case Feeling.surprised: return Colors.orange;
     }
   }
-}
 
-// Simulated Database
-class MockDatabase {
-  static final List<DiaryEntry> entries = [
-    DiaryEntry(
-      id: "1",
-      userEmail: "test@gmail.com",
-      date: DateTime.now().subtract(const Duration(days: 1)),
-      title: "My first diary entry",
-      feeling: Feeling.happy,
-      content: "Today I started working on Mobile_04. It feels great to build the Diary app!",
-    )
-  ];
+  factory DiaryEntry.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
+    return DiaryEntry(
+      id: doc.id,
+      userEmail: data['userEmail'] ?? '',
+      date: (data['date'] as Timestamp).toDate(),
+      title: data['title'] ?? '',
+      feeling: Feeling.values.firstWhere((e) => e.name == data['feeling'], orElse: () => Feeling.neutral),
+      content: data['content'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'userEmail': userEmail,
+      'date': Timestamp.fromDate(date),
+      'title': title,
+      'feeling': feeling.name,
+      'content': content,
+    };
+  }
 }

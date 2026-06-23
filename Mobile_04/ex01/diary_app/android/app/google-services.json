@@ -29,6 +29,13 @@
             {
               "client_id": "838962650459-tralqeh29b7ob08cv461o4aldrdv38nr.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "838962650459-b3r17rpoj804s54bqceos3tini2a80d4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.diaryApp"
+              }
             }
           ]
         }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'profile_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,27 +10,47 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  bool _isLoading = true;
   
   @override
   void initState() {
     super.initState();
+    _handleWebRedirect();
+  }
+
+  Future<void> _handleWebRedirect() async {
+    try {
+      final cred = await FirebaseAuth.instance.getRedirectResult();
+      if (cred != null && cred.user != null && mounted) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: cred.user!.email ?? 'Unknown')));
+        return;
+      }
+    } catch (e) {
+      debugPrint("Redirect error: $e");
+    }
+
+    if (FirebaseAuth.instance.currentUser != null && mounted) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: FirebaseAuth.instance.currentUser!.email ?? 'Unknown')));
+      return;
+    }
+
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null && mounted) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: user.email ?? 'Unknown')));
       }
     });
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return;
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      GoogleAuthProvider googleProvider = GoogleAuthProvider();
+      await FirebaseAuth.instance.signInWithPopup(googleProvider);
       if (context.mounted) Navigator.pop(context); 
     } catch (e) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Google Sign-In Error: $e")));
@@ -41,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signInWithGitHub(BuildContext context) async {
     try {
       GithubAuthProvider githubProvider = GithubAuthProvider();
-      await FirebaseAuth.instance.signInWithProvider(githubProvider);
+      await FirebaseAuth.instance.signInWithPopup(githubProvider);
       if (context.mounted) Navigator.pop(context); 
     } catch (e) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("GitHub Sign-In Error: $e")));
@@ -106,6 +125,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF0FDF4),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF22C55E))),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF0FDF4),
       body: Container(

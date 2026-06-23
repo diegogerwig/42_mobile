@@ -45,7 +45,6 @@ class ProfileScreen extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('entries')
             .where('userEmail', isEqualTo: userEmail)
-            .orderBy('date', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) return Center(child: Text('Please create index in Firebase for orderBy date!', style: const TextStyle(color: Colors.red), textAlign: TextAlign.center));
@@ -56,10 +55,17 @@ class ProfileScreen extends StatelessWidget {
             return const Center(child: Text("No entries yet. Create one!", style: TextStyle(color: Colors.grey, fontSize: 18)));
           }
 
+          final sortedDocs = docs.toList()
+            ..sort((a, b) {
+              final dateA = (a.data() as Map)['date'] as Timestamp;
+              final dateB = (b.data() as Map)['date'] as Timestamp;
+              return dateB.compareTo(dateA);
+            });
+
           return ListView.builder(
-            itemCount: docs.length,
+            itemCount: sortedDocs.length,
             itemBuilder: (context, index) {
-              final entry = DiaryEntry.fromFirestore(docs[index]);
+              final entry = DiaryEntry.fromFirestore(sortedDocs[index]);
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(

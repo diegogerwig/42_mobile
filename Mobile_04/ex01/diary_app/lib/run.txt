@@ -1,1 +1,1 @@
-flutter run -d chrome --web-browser-flag="--disable-features=CrossOriginOpenerPolicy"
+flutter run -d web-server --web-port 8080

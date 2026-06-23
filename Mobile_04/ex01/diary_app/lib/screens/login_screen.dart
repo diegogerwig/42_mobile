@@ -34,12 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user != null && mounted) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: user.email ?? 'Unknown')));
-      }
-    });
-
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -47,23 +41,29 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _signInWithGoogle(BuildContext context) async {
+  Future<void> _signInWithGoogle(BuildContext sheetContext) async {
     try {
       GoogleAuthProvider googleProvider = GoogleAuthProvider();
-      await FirebaseAuth.instance.signInWithPopup(googleProvider);
-      if (context.mounted) Navigator.pop(context); 
+      final cred = await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      if (sheetContext.mounted) Navigator.pop(sheetContext); 
+      if (mounted && cred.user != null) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: cred.user!.email ?? 'Unknown')));
+      }
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Google Sign-In Error: $e")));
+      if (sheetContext.mounted) ScaffoldMessenger.of(sheetContext).showSnackBar(SnackBar(content: Text("Google Sign-In Error: $e")));
     }
   }
 
-  Future<void> _signInWithGitHub(BuildContext context) async {
+  Future<void> _signInWithGitHub(BuildContext sheetContext) async {
     try {
       GithubAuthProvider githubProvider = GithubAuthProvider();
-      await FirebaseAuth.instance.signInWithPopup(githubProvider);
-      if (context.mounted) Navigator.pop(context); 
+      final cred = await FirebaseAuth.instance.signInWithPopup(githubProvider);
+      if (sheetContext.mounted) Navigator.pop(sheetContext); 
+      if (mounted && cred.user != null) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: cred.user!.email ?? 'Unknown')));
+      }
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("GitHub Sign-In Error: $e")));
+      if (sheetContext.mounted) ScaffoldMessenger.of(sheetContext).showSnackBar(SnackBar(content: Text("GitHub Sign-In Error: $e")));
     }
   }
 

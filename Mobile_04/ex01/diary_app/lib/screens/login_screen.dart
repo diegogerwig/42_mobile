@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'profile_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -47,7 +48,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final cred = await FirebaseAuth.instance.signInWithPopup(googleProvider);
       if (sheetContext.mounted) Navigator.pop(sheetContext); 
       if (mounted && cred.user != null) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: cred.user!.email ?? 'Unknown')));
+        String identifier = cred.user!.email ?? cred.user!.displayName ?? cred.user!.uid;
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: identifier)));
       }
     } catch (e) {
       if (sheetContext.mounted) ScaffoldMessenger.of(sheetContext).showSnackBar(SnackBar(content: Text("Google Sign-In Error: $e")));
@@ -57,10 +59,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signInWithGitHub(BuildContext sheetContext) async {
     try {
       GithubAuthProvider githubProvider = GithubAuthProvider();
+      githubProvider.addScope('user:email');
+      
       final cred = await FirebaseAuth.instance.signInWithPopup(githubProvider);
       if (sheetContext.mounted) Navigator.pop(sheetContext); 
       if (mounted && cred.user != null) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: cred.user!.email ?? 'Unknown')));
+        String identifier = cred.user!.email ?? cred.user!.displayName ?? cred.user!.uid;
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ProfileScreen(userEmail: identifier)));
       }
     } catch (e) {
       if (sheetContext.mounted) ScaffoldMessenger.of(sheetContext).showSnackBar(SnackBar(content: Text("GitHub Sign-In Error: $e")));
@@ -85,13 +90,13 @@ class _LoginScreenState extends State<LoginScreen> {
               const Text("Log in to continue to your diary.", style: TextStyle(color: Colors.white70, fontSize: 14)),
               const SizedBox(height: 24),
               _buildAuthButton(
-                icon: Icons.g_mobiledata,
+                iconWidget: const FaIcon(FontAwesomeIcons.google, size: 24, color: Colors.white),
                 text: "Continue with Google",
                 onPressed: () => _signInWithGoogle(context),
               ),
               const SizedBox(height: 12),
               _buildAuthButton(
-                icon: Icons.code,
+                iconWidget: const FaIcon(FontAwesomeIcons.github, size: 24, color: Colors.white),
                 text: "Continue with GitHub",
                 onPressed: () => _signInWithGitHub(context),
               ),
@@ -103,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildAuthButton({required IconData icon, required String text, required VoidCallback onPressed}) {
+  Widget _buildAuthButton({required Widget iconWidget, required String text, required VoidCallback onPressed}) {
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.white,
@@ -115,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 28),
+          iconWidget,
           const SizedBox(width: 12),
           Text(text, style: const TextStyle(fontSize: 16)),
         ],

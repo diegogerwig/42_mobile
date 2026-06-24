@@ -1,0 +1,78 @@
+import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+class DefaultFirebaseOptions {
+  static FirebaseOptions get currentPlatform {
+    if (kIsWeb) {
+      return web;
+    }
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return android;
+      case TargetPlatform.iOS:
+        return ios;
+      case TargetPlatform.macOS:
+        return macos;
+      case TargetPlatform.windows:
+        return windows;
+      case TargetPlatform.linux:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for linux - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
+      default:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions are not supported for this platform.',
+        );
+    }
+  }
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyBj38xH5il9eqQBqx7pq1lW4yAz8vAjE2E',
+    appId: '1:838962650459:web:ea74b8f187b3f8fe66ce7e',
+    messagingSenderId: '838962650459',
+    projectId: 'diary-app-944db',
+    authDomain: 'diary-app-944db.firebaseapp.com',
+    storageBucket: 'diary-app-944db.firebasestorage.app',
+    measurementId: 'G-8JVFKW2L4D',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyBow5mzTdCbfR0zOKege-uYT23PZUgXa0w',
+    appId: '1:838962650459:android:5f0f81ced8f2fdaf66ce7e',
+    messagingSenderId: '838962650459',
+    projectId: 'diary-app-944db',
+    storageBucket: 'diary-app-944db.firebasestorage.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCp-DsLHkkzk5EL1xBOESKhbaS88Lx3Jwc',
+    appId: '1:838962650459:ios:19d30cc58ef2edbb66ce7e',
+    messagingSenderId: '838962650459',
+    projectId: 'diary-app-944db',
+    storageBucket: 'diary-app-944db.firebasestorage.app',
+    iosClientId: '838962650459-b3r17rpoj804s54bqceos3tini2a80d4.apps.googleusercontent.com',
+    iosBundleId: 'com.example.diaryApp',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyCp-DsLHkkzk5EL1xBOESKhbaS88Lx3Jwc',
+    appId: '1:838962650459:ios:19d30cc58ef2edbb66ce7e',
+    messagingSenderId: '838962650459',
+    projectId: 'diary-app-944db',
+    storageBucket: 'diary-app-944db.firebasestorage.app',
+    iosClientId: '838962650459-b3r17rpoj804s54bqceos3tini2a80d4.apps.googleusercontent.com',
+    iosBundleId: 'com.example.diaryApp',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBj38xH5il9eqQBqx7pq1lW4yAz8vAjE2E',
+    appId: '1:838962650459:web:cd8d3715c9cf19be66ce7e',
+    messagingSenderId: '838962650459',
+    projectId: 'diary-app-944db',
+    authDomain: 'diary-app-944db.firebaseapp.com',
+    storageBucket: 'diary-app-944db.firebasestorage.app',
+    measurementId: 'G-HLE8LVTKNW',
+  );
+}

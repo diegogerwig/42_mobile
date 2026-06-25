@@ -40,16 +40,32 @@ class DiaryEntry {
     }
   }
 
-  factory DiaryEntry.fromFirestore(DocumentSnapshot doc) {
-    Map data = doc.data() as Map<String, dynamic>;
-    return DiaryEntry(
-      id: doc.id,
-      userEmail: data['userEmail'] ?? '',
-      date: (data['date'] as Timestamp).toDate(),
-      title: data['title'] ?? '',
-      feeling: Feeling.values.firstWhere((e) => e.name == data['feeling'], orElse: () => Feeling.neutral),
-      content: data['content'] ?? '',
-    );
+  static DiaryEntry? tryParse(DocumentSnapshot doc) {
+    try {
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data == null) return null;
+
+      final rawFeeling = data['feeling'];
+      if (rawFeeling is! String || !Feeling.values.any((e) => e.name == rawFeeling)) {
+        return null;  // Discard if format is invalid
+      }
+
+      final rawDate = data['date'];
+      if (rawDate is! Timestamp) {
+        return null;  // Discard if format is invalid
+      }
+
+      return DiaryEntry(
+        id: doc.id,
+        userEmail: data['userEmail']?.toString() ?? '',
+        date: rawDate.toDate(),
+        title: data['title']?.toString() ?? '',
+        feeling: Feeling.values.firstWhere((e) => e.name == rawFeeling),
+        content: data['content']?.toString() ?? '',
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   Map<String, dynamic> toFirestore() {

@@ -14,7 +14,7 @@ class ProfileScreen extends StatelessWidget {
   void _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     if (context.mounted) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
     }
   }
 
@@ -26,15 +26,14 @@ class ProfileScreen extends StatelessWidget {
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('advanced_entries')
-              .where('userEmail', isEqualTo: userEmail)
+              .where('userEmail', isEqualTo: userEmail)  // Link user accounts
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator(color: Color(0xFF22C55E)));
             
             final docs = snapshot.data?.docs ?? [];
-            final entries = docs.map((d) => DiaryEntry.fromFirestore(d)).toList();
+            final entries = docs.map((d) => DiaryEntry.tryParse(d)).whereType<DiaryEntry>().toList();
             
-            // Sort by date descending
             entries.sort((a, b) => b.date.compareTo(a.date));
             
             // Calculate percentages

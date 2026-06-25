@@ -63,7 +63,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
             },
             calendarStyle: CalendarStyle(
               selectedDecoration: const BoxDecoration(
-                color: Color(0xFF3B82F6), // Azul claro de seleccion
+                color: Color(0xFF3B82F6),
                 shape: BoxShape.circle,
               ),
               todayDecoration: BoxDecoration(
@@ -77,7 +77,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('advanced_entries')
-                  .where('userEmail', isEqualTo: widget.userEmail)
+                  .where('userEmail', isEqualTo: widget.userEmail)  // Link user accounts
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -85,12 +85,10 @@ class _AgendaScreenState extends State<AgendaScreen> {
                 }
 
                 final docs = snapshot.data?.docs ?? [];
-                final allEntries = docs.map((d) => DiaryEntry.fromFirestore(d)).toList();
+                final allEntries = docs.map((d) => DiaryEntry.tryParse(d)).whereType<DiaryEntry>().toList();
 
-                // Filtrar solo los del dia seleccionado
                 final selectedEntries = allEntries.where((e) => isSameDay(e.date, _selectedDay)).toList();
                 
-                // Ordenar por hora descendente
                 selectedEntries.sort((a, b) => b.date.compareTo(a.date));
 
                 if (selectedEntries.isEmpty) {

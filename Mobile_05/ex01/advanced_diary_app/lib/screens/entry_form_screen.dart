@@ -16,6 +16,13 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   Feeling _selectedFeeling = Feeling.happy;
   bool _isSaving = false;
 
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
   Future<void> _saveEntry() async {
     if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Title and Content cannot be empty")));
